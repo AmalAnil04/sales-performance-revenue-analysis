@@ -1,0 +1,51 @@
+// =====================================================================
+// measures.dax  |  Paste each block into Power BI Desktop:
+// Modeling > New measure (or New table / New column where stated).
+// Table name used below: Superstore  (rename if yours differs)
+// =====================================================================
+
+// ---- 1. DATE TABLE (Modeling > New table) -----------------------------
+Date =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( YEAR ( MIN ( Superstore[order_date] ) ), 1, 1 ),
+               DATE ( YEAR ( MAX ( Superstore[order_date] ) ), 12, 31 ) ),
+    "Year", YEAR ( [Date] ),
+    "Month Number", MONTH ( [Date] ),
+    "Month", FORMAT ( [Date], "MMM" ),
+    "Year-Month", FORMAT ( [Date], "YYYY-MM" )
+)
+// Then: select Date[Month] > Column tools > Sort by column > Month Number
+//       Right-click the Date table > Mark as date table (column: Date)
+//       Model view: connect Superstore[order_date] (many) -> Date[Date] (one)
+
+// ---- 2. CALCULATED COLUMN on Superstore (Modeling > New column) ------
+Discount Band =
+SWITCH (
+    TRUE (),
+    Superstore[discount] = 0,   "1) No discount",
+    Superstore[discount] <= 0.2, "2) Up to 20%",
+    Superstore[discount] <= 0.4, "3) 21% to 40%",
+    "4) Over 40%"
+)
+
+// ---- 3. KPI MEASURES --------------------------------------------------
+Total Revenue  = SUM ( Superstore[sales] )
+Total Profit   = SUM ( Superstore[profit] )
+Total Orders   = DISTINCTCOUNT ( Superstore[order_id] )
+Total Quantity = SUM ( Superstore[quantity] )
+Profit Margin % = DIVIDE ( [Total Profit], [Total Revenue] )
+Avg Order Value = DIVIDE ( [Total Revenue], [Total Orders] )
+
+// ---- 4. YEAR-OVER-YEAR ------------------------------------------------
+Revenue LY = CALCULATE ( [Total Revenue], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+YoY Revenue Growth % = DIVIDE ( [Total Revenue] - [Revenue LY], [Revenue LY] )
+// 2014 shows blank on purpose: there is no 2013 data to compare with.
+
+// ---- 5. EXTRA ANALYSIS MEASURES --------------------------------------
+Avg Discount % = AVERAGE ( Superstore[discount] )
+Loss-Making Lines = CALCULATE ( COUNTROWS ( Superstore ), Superstore[profit] < 0 )
+Loss Share % = DIVIDE ( [Loss-Making Lines], COUNTROWS ( Superstore ) )
+Revenue Share % = DIVIDE ( [Total Revenue], CALCULATE ( [Total Revenue], ALL ( Superstore ) ) )
+
+// Conditional-format colour for profit (Format > Cell elements / Data colors > fx > Field value)
+Profit Colour = IF ( [Total Profit] < 0, "#DC2626", "#4F46E5" )

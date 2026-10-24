@@ -1,0 +1,10 @@
+Rows loaded: 9994 | Columns: 21
+Missing cells: 0
+Text fixed in 'Product Name': 273 cells (extra spaces)
+Order dates: 2014-01-03 to 2017-12-30
+Rows where Ship Date < Order Date: 0
+Postal codes padded back to 5 digits: 449 rows (CT, MA, ME, NH, NJ, RI, VT)
+Sales <= 0: 0 | Quantity <= 0: 0 | Discount outside 0-1: 0
+Negative Profit rows (genuine losses, kept): 1871
+Duplicate rows removed (all fields identical except Row ID): 1
+Final rows: 9993 | Final columns: 24 -> data/cleaned/superstore_clean.csv
